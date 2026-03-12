@@ -41,3 +41,10 @@ curl -X POST http://localhost:5678/webhook-test/login-api \
            "usuario": "administrador",
            "estado": "failed"
          }'
+```
+
+5. Verificar la recepción del correo de alerta en el cliente web de MailHog (http://localhost:8025).
+6. Verificar la inserción de la IP en la base de datos PostgreSQL en la tabla ips_baneadas.
+```
+sudo docker exec -it postgres psql -U n8n_user -d n8n_db -c "SELECT * FROM ips_baneadas WHERE ip = '185.220.101.46';"
+```
