@@ -28,6 +28,12 @@ El flujo de automatización (workflow) sigue un proceso lineal de evaluación y 
 
 Para probar el sistema de forma local:
 
+Primero debemos de iniciar el docker compose con:
+
+```
+sudo docker compose -f dc-n8n.yml up -d
+```
+
 1. Acceder a la interfaz de n8n e importar el fichero `.json` adjunto.
 2. Configurar las credenciales de PostgreSQL y la API Key de AbuseIPDB en los nodos correspondientes.
 3. Hacer doble clic en el nodo **Webhook** y pulsar en **"Listen for test event"** para abrir el puerto de escucha temporal.
