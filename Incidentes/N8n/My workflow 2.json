@@ -1,0 +1,366 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "login-api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b6ee5c82-cf41-4031-8696-71bdeb8f7fa2",
+      "name": "Webhook",
+      "webhookId": "f39c59b7-fa58-45c8-93ad-d5398d1d1438"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "registro_logins",
+          "mode": "list",
+          "cachedResultName": "registro_logins"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ip": "={{ $json.body.ip }}",
+            "usuario": "={{ $json.body.usuario }}",
+            "estado": "={{ $json.body.estado }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ip",
+              "displayName": "ip",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "usuario",
+              "displayName": "usuario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        208,
+        0
+      ],
+      "id": "bb5ee836-1a25-4aab-b501-6194a15ca977",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "slIr9ZZtqRN7RMs6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.abuseipdb.com/api/v2/check",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "ipAddress",
+              "value": "={{ $('Webhook').item.json.body.ip }}"
+            },
+            {
+              "name": "maxAgeInDays",
+              "value": "90"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Key",
+              "value": "20e30f670fd99ac51e4b23b923b48e23e832d6860e2c9da74b5feaceaaa0fbfca5b847e0535683f4"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "1e86ae57-2cae-48df-aa63-ccaa5615a508",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "465a69ba-5844-482b-8a46-c95027f79d1f",
+              "leftValue": "={{ $json.data.abuseConfidenceScore }}",
+              "rightValue": 50,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        624,
+        0
+      ],
+      "id": "2d6f881b-45dd-4e49-94ca-55715df8f463",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "fromEmail": "firewall@tu-empresa.local",
+        "toEmail": "admin@tu-empresa.local",
+        "subject": "=ALERTA CRÍTICA: Login desde IP Maliciosa (Score: {{ $json.data.abuseConfidenceScore }})",
+        "emailFormat": "text",
+        "text": "=Se ha detectado un intento de acceso desde una IP catalogada como maliciosa.\n\nDetalles del incidente:\n- IP Origen: {{ $json.data.ipAddress }}\n- Usuario atacado: {{ $('Webhook').item.json.body.usuario }}\n- Nivel de Amenaza (AbuseIPDB): {{ $json.data.abuseConfidenceScore }}/100\n- País de origen: {{ $json.data.countryCode }}\n- ISP: {{ $json.data.isp }}\n\nEl evento ya ha sido registrado en la base de datos de auditoría.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        832,
+        -96
+      ],
+      "id": "2b9d3cda-0f9f-427e-8c5d-53a8eb51899c",
+      "name": "Send an Email",
+      "webhookId": "79cd50df-bd27-41cd-8b20-add92fb7ed2b",
+      "credentials": {
+        "smtp": {
+          "id": "9Dekr51UdD85ol7F",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "ips_baneadas",
+          "mode": "list",
+          "cachedResultName": "ips_baneadas"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ip": "={{ $('Webhook').item.json.body.ip }}",
+            "motivo": "=Bloqueo automático por Score: {{ $('HTTP Request').item.json.data.abuseConfidenceScore }}"
+          },
+          "matchingColumns": [
+            "ip"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ip",
+              "displayName": "ip",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "motivo",
+              "displayName": "motivo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "fecha_bloqueo",
+              "displayName": "fecha_bloqueo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1040,
+        -96
+      ],
+      "id": "2629f8d0-591e-444e-a0f0-6a65cb3480e2",
+      "name": "Insert or update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "slIr9ZZtqRN7RMs6",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an Email": {
+      "main": [
+        [
+          {
+            "node": "Insert or update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "09c05f1d-751d-433b-889a-5a2a3d018d0b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "04b8fbecf45a719ff8148ae8a710a109a77b183358533b7f1ccc4e000779eb70"
+  },
+  "id": "3Kvv5T8sOeWVXFzn",
+  "tags": []
+}
