@@ -59,7 +59,7 @@ curl -X POST http://localhost:5678/webhook-test/login-api \
 sudo docker exec -it postgres psql -U n8n_user -d n8n_db -c "SELECT * FROM ips_baneadas WHERE ip = '185.220.101.46';"
 ```
 
-Para comprobarlo con una IP que no sea maliciosa usamos el mismo comando pero cambiamos la IP a verificar, por ejemplo la 8.8.8.8. Y el flujo no completará hasta el final.
+Para comprobarlo con una IP que no sea maliciosa usamos el mismo comando pero cambiamos la IP a verificar, por ejemplo la 8.8.8.8. Y el flujo no se completará hasta el final.
 
 ## 5. Reflexión y posibles mejoras
 
