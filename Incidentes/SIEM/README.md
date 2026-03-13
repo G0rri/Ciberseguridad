@@ -20,10 +20,7 @@ El mecanismo de ingesta y detección funciona a través de las siguientes etapas
 
 # Procedimiento
 Antes de levantar nada, Elasticsearch requiere que el sistema anfitrión tenga un límite mayor de memoria mapeada. Así que ejecutamos esto:
- 
-```bash
-# Ejecutar comando de memoria aquí
-```
+
 Creamos una carpeta para el proyecto y dentro creamos dos archivos: docker-compose.yml y logstash.conf.
 
 Dentro del directorio creado, definimos el núcleo del SIEM con un archivo Docker Compose.
@@ -31,7 +28,7 @@ Dentro del directorio creado, definimos el núcleo del SIEM con un archivo Docke
 Logstash necesita saber qué hacer con los datos. Así que creamos un archivo de configuración para logstash que escuche en el puerto 5044 (donde se enviarán los logs posteriormente) y los mande directamente a Elasticsearch.
 
 Ahora con las configuraciones anteriormente establecidas, pasamos a construir el Docker Compose con este comando:
-Bash
+
 
 # Comando para construir y levantar el entorno
 
