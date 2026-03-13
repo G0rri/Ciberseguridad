@@ -4,7 +4,7 @@ Este repositorio contiene la implementación de un workflow en n8n diseñado par
 
 ## 1. ¿Qué incidente detectamos?
 
-El objetivo principal es cazar intentos de inicio de sesión anómalos. Para ello, el sistema analiza las direcciones IP entrantes y las cruza con fuentes de Inteligencia de Amenazas (Threat Intelligence). Si un intento de acceso proviene de una IP catalogada como maliciosa (por ejemplo, atacantes de fuerza bruta, nodos de salida Tor o botnets), el sistema lo clasifica inmediatamente como un incidente crítico.
+El objetivo principal es cazar intentos de inicio de sesión anómalos. Para ello, el sistema analiza las direcciones IP entrantes y las cruza con fuentes de Inteligencia de Amenazas. Si un intento de acceso proviene de una IP catalogada como maliciosa (por ejemplo, atacantes de fuerza bruta, nodos de salida Tor o botnets), el sistema lo clasifica inmediatamente como un incidente crítico.
 
 ## 2. Lógica de detección paso a paso
 
