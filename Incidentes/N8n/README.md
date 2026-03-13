@@ -12,7 +12,7 @@ El flujo sigue un proceso lineal muy claro para evaluar la amenaza y actuar en c
 
 1. **Ingesta de datos:** Un nodo Webhook hace de "puerta de entrada" recibiendo un JSON con los datos del intento de login (IP, usuario y estado).
 2. **Auditoría centralizada:** Antes de preguntar nada, un nodo de PostgreSQL guarda el evento en la tabla `registro_logins`. Así nos aseguramos de tener un histórico completo y auditable para posibles análisis forenses.
-3. **Enriquecimiento (Threat Intel):** Un nodo HTTP Request coge la IP del atacante y hace una consulta a la API de AbuseIPDB para comprobar su reputación.
+3. **Enriquecimiento:** Un nodo HTTP Request coge la IP del atacante y hace una consulta a la API de AbuseIPDB para comprobar su reputación.
 4. **Toma de decisiones:** Un nodo lógico `IF` evalúa la puntuación (`abuseConfidenceScore`) que nos devuelve la API:
    * **Score < 50 (Rama False):** Falsa alarma o riesgo bajo. El flujo termina aquí.
    * **Score >= 50 (Rama True):** Amenaza confirmada. Se activa la respuesta a incidentes.
