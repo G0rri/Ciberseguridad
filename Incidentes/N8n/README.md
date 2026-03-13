@@ -1,45 +1,47 @@
 # Sistema de Detección y Respuesta Ante Incidentes (n8n)
 
-Este repositorio contiene la implementación de un workflow funcional en n8n diseñado para detectar, registrar y notificar posibles incidentes de ciberseguridad de forma automatizada.
+Este repositorio contiene la implementación de un workflow en n8n diseñado para automatizar la detección, registro y notificación de posibles incidentes de ciberseguridad. 
 
-## 1. Descripción del incidente que se detecta
+## 1. ¿Qué incidente detectamos?
 
-El sistema detecta intentos de inicio de sesión (logins) anómalos provenientes de direcciones IP con mala reputación, integrando fuentes de Inteligencia de Amenazas (Threat Intelligence) externas. Se considera incidente crítico cualquier intento de acceso originado desde una IP catalogada previamente como maliciosa (ataques de fuerza bruta, nodos de salida Tor maliciosos, botnets, etc.).
+El objetivo principal es cazar intentos de inicio de sesión anómalos. Para ello, el sistema analiza las direcciones IP entrantes y las cruza con fuentes de Inteligencia de Amenazas (Threat Intelligence). Si un intento de acceso proviene de una IP catalogada como maliciosa (por ejemplo, atacantes de fuerza bruta, nodos de salida Tor o botnets), el sistema lo clasifica inmediatamente como un incidente crítico.
 
-## 2. Explicación de la lógica de detección
+## 2. Lógica de detección paso a paso
 
-El flujo de automatización (workflow) sigue un proceso lineal de evaluación y respuesta:
+El flujo sigue un proceso lineal muy claro para evaluar la amenaza y actuar en consecuencia:
 
-1. **Ingesta de datos:** Un nodo Webhook (Trigger) recibe un payload en formato JSON con los datos del intento de inicio de sesión (IP, usuario, estado).
-2. **Auditoría centralizada:** Un nodo PostgreSQL inserta incondicionalmente el evento en la tabla `registro_logins` para mantener un log histórico auditable.
-3. **Enriquecimiento de datos:** Un nodo HTTP Request consulta la API de AbuseIPDB enviando la IP del atacante.
-4. **Toma de decisiones:** Un nodo lógico `IF` evalúa el campo `abuseConfidenceScore` devuelto por la API. 
-   * **Si el score es < 50 (Rama False):** El flujo termina, considerándose un evento de bajo riesgo.
-   * **Si el score es >= 50 (Rama True):** Se dispara la respuesta a incidentes.
-5. **Respuesta Activa:** Se envía una notificación por correo electrónico al SOC (vía MailHog) con los detalles técnicos del atacante. Seguidamente, un segundo nodo de PostgreSQL ejecuta un UPSERT (Insert or Update) para registrar la IP en una tabla de contención (`ips_baneadas`), simulando un bloqueo.
+1. **Ingesta de datos:** Un nodo Webhook hace de "puerta de entrada" recibiendo un JSON con los datos del intento de login (IP, usuario y estado).
+2. **Auditoría centralizada:** Antes de preguntar nada, un nodo de PostgreSQL guarda el evento en la tabla `registro_logins`. Así nos aseguramos de tener un histórico completo y auditable para posibles análisis forenses.
+3. **Enriquecimiento (Threat Intel):** Un nodo HTTP Request coge la IP del atacante y hace una consulta a la API de AbuseIPDB para comprobar su reputación.
+4. **Toma de decisiones:** Un nodo lógico `IF` evalúa la puntuación (`abuseConfidenceScore`) que nos devuelve la API:
+   * **Score < 50 (Rama False):** Falsa alarma o riesgo bajo. El flujo termina aquí.
+   * **Score >= 50 (Rama True):** Amenaza confirmada. Se activa la respuesta a incidentes.
+5. **Respuesta Activa:** Se envía una alerta técnica por correo al equipo de seguridad (SOC) usando MailHog. Inmediatamente después, otro nodo PostgreSQL coge la IP y le hace un UPSERT (Insert or Update) en la tabla `ips_baneadas` para simular un bloqueo rápido a nivel de red.
 
-## 3. Justificación de los criterios utilizados
+## 3. Justificación de las decisiones técnicas
 
-* **Auditoría total:** Se decide registrar el 100% del tráfico antes de la evaluación para garantizar la trazabilidad forense ante posibles investigaciones futuras.
-* **Umbral de detección (Score >= 50):** Se establece este límite en AbuseIPDB para evitar falsos positivos con IPs residenciales dinámicas, asegurando que las alertas y bloqueos solo se aplican a actores maliciosos confirmados.
-* **Baneo mediante UPSERT:** Al utilizar la restricción `UNIQUE` en la base de datos y la operación "Insert or Update", se optimiza el rendimiento del sistema evitando errores de duplicidad de claves si el mismo atacante realiza ataques iterativos masivos.
+* **¿Por qué guardarlo todo?** He decidido registrar el 100% del tráfico entrante, no solo los ataques. En ciberseguridad, lo que hoy parece tráfico normal, mañana puede ser la clave para entender el origen de una brecha.
+* **El umbral de 50:** Se ha establecido este límite en AbuseIPDB para no generar alertas innecesarias (falsos positivos) provocadas por IPs residenciales dinámicas. Solo disparamos la respuesta contra atacantes confirmados.
+* **El uso de UPSERT para banear:** Al usar la restricción `UNIQUE` en la base de datos junto con la operación "Insert or Update", evitamos que el contenedor de PostgreSQL colapse dando errores si un mismo atacante lanza miles de peticiones seguidas. Si la IP ya está en la lista negra, el sistema simplemente la actualiza sin fallar.
 
 ## 4. Instrucciones para probar el workflow
 
-Para probar el sistema de forma local:
+Para levantar y probar el entorno localmente, sigue estos pasos:
 
-Primero debemos de iniciar el docker compose con:
-
-```
-sudo docker compose -f dc-n8n.yml up -d
-```
-
-1. Acceder a la interfaz de n8n e importar el fichero `.json` adjunto.
-2. Configurar las credenciales de PostgreSQL y la API Key de AbuseIPDB en los nodos correspondientes.
-3. Hacer doble clic en el nodo **Webhook** y pulsar en **"Listen for test event"** para abrir el puerto de escucha temporal.
-4. Abrir una terminal en el host y ejecutar el siguiente comando simulando un ataque desde una IP listada en listas negras:
+Primero, inicia los servicios de la infraestructura con Docker Compose:
 
 ```bash
+sudo docker compose -f dc-n8n.yml up -d
+```
+1. Accede a la interfaz de n8n e importa el fichero .json adjunto en este repositorio.
+
+2. Configura tus propias credenciales de PostgreSQL y tu API Key de AbuseIPDB en los nodos correspondientes.
+
+3. Haz doble clic en el nodo Webhook y pulsa en "Listen for test event" para abrir el puerto de escucha temporal.
+
+4. Abre una terminal en tu host y lanza este comando simulando un ataque desde una IP listada en listas negras:
+
+```
 curl -X POST http://localhost:5678/webhook-test/login-api \
      -H "Content-Type: application/json" \
      -d '{
@@ -49,8 +51,20 @@ curl -X POST http://localhost:5678/webhook-test/login-api \
          }'
 ```
 
-5. Verificar la recepción del correo de alerta en el cliente web de MailHog (http://localhost:8025).
-6. Verificar la inserción de la IP en la base de datos PostgreSQL en la tabla ips_baneadas.
+5. Comprueba que ha llegado el correo de alerta abriendo el cliente web de MailHog (http://localhost:8025).
+
+6. Verifica que la IP ha sido "bloqueada" consultando la base de datos PostgreSQL:
+
 ```
 sudo docker exec -it postgres psql -U n8n_user -d n8n_db -c "SELECT * FROM ips_baneadas WHERE ip = '185.220.101.46';"
 ```
+
+## 5. Reflexión y posibles mejoras
+
+Aunque el sistema cumple su propósito, en un entorno de producción real o en una infraestructura autoalojada compleja, se podrían implementar las siguientes mejoras:
+
+**Bloqueo real en el Firewall:** Ahora mismo el baneo es una simulación en una base de datos. La evolución lógica sería conectar n8n (mediante un nodo SSH o una petición HTTP) directamente a un firewall perimetral o a un proxy inverso para aplicar una regla de denegación real (Drop) bloqueando el tráfico de esa IP en milisegundos.
+
+**Notificaciones instantáneas:** El correo electrónico puede ser un canal lento para incidentes críticos. Integrar un nodo de mensajería (como Telegram, Slack o Mattermost) permitiría al administrador recibir la alerta en tiempo real en su teléfono móvil.
+
+**Monitorización de servicios reales:** Sustituir el Webhook de prueba por un sistema que lea activamente los logs de intentos de acceso fallidos de servicios expuestos reales (como un servidor VPN, gestores de contraseñas o un NAS) para dotar al flujo de una utilidad defensiva práctica.
