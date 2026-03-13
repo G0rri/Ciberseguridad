@@ -62,46 +62,46 @@ esto:
 Creamos una carpeta para el proyecto y dentro creamos dos archivos:
 **docker-compose.yml** y **logstash.conf.**
 
-<img width="566" height="87" alt="image" src="https://github.com/user-attachments/assets/5a62ad6e-9c4a-444c-bcea-583256ee0304" />
+<img width="567" height="87" alt="image" src="https://github.com/user-attachments/assets/f229e762-886e-4695-bb99-5984569ff18d" />
 
 Dentro del directorio creado, definimos el núcleo del SIEM con un
 archivo **Docker** **Compose**.
 
-<img width="421" height="385" alt="image" src="https://github.com/user-attachments/assets/5e0df2af-a3fe-4a23-891c-c9dd47680733" />
+<img width="425" height="387" alt="image" src="https://github.com/user-attachments/assets/5f4b2905-1e13-4425-bc04-4f3cb5f78174" />
 
 Logstash necesita saber qué hacer con los datos. Así que creamos un
 archivo de configuración para **logstash** que escuche en el puerto
 **5044** (donde se enviarán los logs posteriormente) y los mande
 directamente a **Elasticsearch**.
 
-<img width="565" height="205" alt="image" src="https://github.com/user-attachments/assets/741f084b-9103-46d6-8e23-26ad735ce039" />
+<img width="565" height="205" alt="image" src="https://github.com/user-attachments/assets/0c88a304-c851-4a36-a89f-c8e07229186f" />
 
 Ahora con las configuraciones anteriormente establecidas, pasamos a
 construir el Docker Compose con este comando:
 
-<img width="566" height="172" alt="image" src="https://github.com/user-attachments/assets/2c8624b6-99f7-4f8d-866d-4a030370a3f2" />
+<img width="567" height="173" alt="image" src="https://github.com/user-attachments/assets/5da090c4-064f-46f1-a255-41907049b602" />
 
 Dentro de la carpeta de antes creamos una subcarpeta para la víctima y
 dentro creamos un Dockerfile.
 
-<img width="566" height="77" alt="image" src="https://github.com/user-attachments/assets/be22c849-559e-4e99-b22e-25efcf4bbd5e" />
+<img width="567" height="77" alt="image" src="https://github.com/user-attachments/assets/236b2bab-7911-4dbb-87fb-f8aa4daaace3" />
 
 Como los contenedores base de Ubuntu no traen sistema de logs por
 defecto, este Dockerfile instala SSH, para que se genere en el archivo
 **auth.log**, y **Filebeat**.
 
-<img width="567" height="265" alt="image" src="https://github.com/user-attachments/assets/c92a04e9-581e-4d6a-ab85-281e0fa90171" />
+<img width="567" height="266" alt="image" src="https://github.com/user-attachments/assets/f1068277-226b-4144-829d-0b913fbc2da5" />
 
 Ahora creamos otro archivo en el mismo directorio en el que estábamos
 para que le diga a Filebeat qué leer y a dónde enviarlo.
 
-<img width="452" height="197" alt="image" src="https://github.com/user-attachments/assets/ca50df1e-2d16-46f6-95f4-9100aeddc1b8" />
+<img width="452" height="197" alt="image" src="https://github.com/user-attachments/assets/a6d07480-e520-41fb-b6b0-d579d9c0bc1e" />
 
 Ahora volvemos a la raíz de tu proyecto y modificamos el
 docker-compose.yml para añadir el nuevo servicio de la víctima. Justo
 debajo del servicio logstash:
 
-<img width="467" height="373" alt="image" src="https://github.com/user-attachments/assets/01373356-6403-48c7-accc-bcebaf03277a" />
+<img width="467" height="374" alt="image" src="https://github.com/user-attachments/assets/f7346c11-2abd-45e5-8673-4b9abc25228f" />
 
 Ahora volvemos a reconstruir el proyecto para incluir la víctima:
 
