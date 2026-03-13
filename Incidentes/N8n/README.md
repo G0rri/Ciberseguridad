@@ -63,8 +63,8 @@ sudo docker exec -it postgres psql -U n8n_user -d n8n_db -c "SELECT * FROM ips_b
 
 Aunque el sistema cumple su propósito, en un entorno de producción real o en una infraestructura autoalojada compleja, se podrían implementar las siguientes mejoras:
 
-**Bloqueo real en el Firewall:** Ahora mismo el baneo es una simulación en una base de datos. La evolución lógica sería conectar n8n (mediante un nodo SSH o una petición HTTP) directamente a un firewall perimetral o a un proxy inverso para aplicar una regla de denegación real (Drop) bloqueando el tráfico de esa IP en milisegundos.
+* **Bloqueo real en el Firewall:** Ahora mismo el baneo es una simulación en una base de datos. La evolución lógica sería conectar n8n (mediante un nodo SSH o una petición HTTP) directamente a un firewall perimetral o a un proxy inverso para aplicar una regla de denegación real (Drop) bloqueando el tráfico de esa IP en milisegundos.
 
-**Notificaciones instantáneas:** El correo electrónico puede ser un canal lento para incidentes críticos. Integrar un nodo de mensajería (como Telegram, Slack o Mattermost) permitiría al administrador recibir la alerta en tiempo real en su teléfono móvil.
+* **Notificaciones instantáneas:** El correo electrónico puede ser un canal lento para incidentes críticos. Integrar un nodo de mensajería (como Telegram, Slack o Mattermost) permitiría al administrador recibir la alerta en tiempo real en su teléfono móvil.
 
-**Monitorización de servicios reales:** Sustituir el Webhook de prueba por un sistema que lea activamente los logs de intentos de acceso fallidos de servicios expuestos reales (como un servidor VPN, gestores de contraseñas o un NAS) para dotar al flujo de una utilidad defensiva práctica.
+* **Monitorización de servicios reales:** Sustituir el Webhook de prueba por un sistema que lea activamente los logs de intentos de acceso fallidos de servicios expuestos reales (como un servidor VPN, gestores de contraseñas o un NAS) para dotar al flujo de una utilidad defensiva práctica.
