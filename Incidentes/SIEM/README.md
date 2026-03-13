@@ -57,106 +57,108 @@ Antes de levantar nada, **Elasticsearch** requiere que el sistema
 anfitrión tenga un límite mayor de memoria mapeada. Así que ejecutamos
 esto:
 
-<img src="media/image1.png" style="width:5.70762in;height:0.96863in" />
+<img width="548" height="92" alt="image" src="https://github.com/user-attachments/assets/efc58d9a-f0a8-4718-9d0c-d41d414c571d" />
 
 Creamos una carpeta para el proyecto y dentro creamos dos archivos:
 **docker-compose.yml** y **logstash.conf.**
 
-<img src="media/image2.png" style="width:5.90556in;height:0.90139in" />
+<img width="566" height="87" alt="image" src="https://github.com/user-attachments/assets/5a62ad6e-9c4a-444c-bcea-583256ee0304" />
 
 Dentro del directorio creado, definimos el núcleo del SIEM con un
 archivo **Docker** **Compose**.
 
-<img src="media/image3.png" style="width:4.4372in;height:4.04273in" />
+<img width="421" height="385" alt="image" src="https://github.com/user-attachments/assets/5e0df2af-a3fe-4a23-891c-c9dd47680733" />
 
 Logstash necesita saber qué hacer con los datos. Así que creamos un
 archivo de configuración para **logstash** que escuche en el puerto
 **5044** (donde se enviarán los logs posteriormente) y los mande
 directamente a **Elasticsearch**.
 
-<img src="media/image4.png" style="width:5.90556in;height:2.1375in" />
+<img width="565" height="205" alt="image" src="https://github.com/user-attachments/assets/741f084b-9103-46d6-8e23-26ad735ce039" />
 
 Ahora con las configuraciones anteriormente establecidas, pasamos a
 construir el Docker Compose con este comando:
 
-<img src="media/image5.png" style="width:5.90556in;height:1.79722in" />
+<img width="566" height="172" alt="image" src="https://github.com/user-attachments/assets/2c8624b6-99f7-4f8d-866d-4a030370a3f2" />
 
 Dentro de la carpeta de antes creamos una subcarpeta para la víctima y
 dentro creamos un Dockerfile.
 
-<img src="media/image6.png" style="width:5.90556in;height:0.8in" />
+<img width="566" height="77" alt="image" src="https://github.com/user-attachments/assets/be22c849-559e-4e99-b22e-25efcf4bbd5e" />
 
 Como los contenedores base de Ubuntu no traen sistema de logs por
 defecto, este Dockerfile instala SSH, para que se genere en el archivo
 **auth.log**, y **Filebeat**.
 
-<img src="media/image7.png" style="width:5.90556in;height:2.77083in" />
+<img width="567" height="265" alt="image" src="https://github.com/user-attachments/assets/c92a04e9-581e-4d6a-ab85-281e0fa90171" />
 
 Ahora creamos otro archivo en el mismo directorio en el que estábamos
 para que le diga a Filebeat qué leer y a dónde enviarlo.
 
-<img src="media/image8.png" style="width:4.71867in;height:2.05233in" />
+<img width="452" height="197" alt="image" src="https://github.com/user-attachments/assets/ca50df1e-2d16-46f6-95f4-9100aeddc1b8" />
 
 Ahora volvemos a la raíz de tu proyecto y modificamos el
 docker-compose.yml para añadir el nuevo servicio de la víctima. Justo
 debajo del servicio logstash:
 
-<img src="media/image9.png" style="width:4.87758in;height:3.90883in" />
+<img width="467" height="373" alt="image" src="https://github.com/user-attachments/assets/01373356-6403-48c7-accc-bcebaf03277a" />
 
 Ahora volvemos a reconstruir el proyecto para incluir la víctima:
 
-<img src="media/image10.png" style="width:4.34593in;height:4.21101in" />
+<img width="416" height="402" alt="image" src="https://github.com/user-attachments/assets/4c0cfaa5-5ceb-42e3-aeb6-68f3c7a516f2" />
 
 En la carpeta principal del proyecto, crea una nueva carpeta llamada
 atacante. Dentro, creamos un archivo llamado Dockerfile.
 
-<img src="media/image11.png" style="width:5.90556in;height:0.78542in" />
+<img width="567" height="75" alt="image" src="https://github.com/user-attachments/assets/3d4f861d-5714-4659-aede-2096ab278d5b" />
 
 Usaremos una imagen base muy ligera (Alpine Linux) a la que simplemente
 le instalaremos el cliente SSH para poder lanzar conexiones contra la
 víctima.
 
-<img src="media/image12.png" style="width:5.90556in;height:1.16806in" />
+<img width="567" height="112" alt="image" src="https://github.com/user-attachments/assets/52bb34d0-60a3-43bd-8134-9b487badc674" />
 
 Ahora volvemos al Docker Compose de la carpeta raíz para añadir la nueva
 subcarpeta que contiene al atacante, tal y como hicimos antes con la
 víctima.
 
-<img src="media/image13.png" style="width:5.90556in;height:4.58681in" />
+<img width="567" height="440" alt="image" src="https://github.com/user-attachments/assets/f7d13215-88cd-468a-b13a-e67ecc366bee" />
 
 Ahora vamos a aplicar los cambios borrando los contenedores anteriores
 con -v por si acaso.
 
-<img src="media/image14.png" style="width:5.90556in;height:2.48611in" />
+<img width="567" height="239" alt="image" src="https://github.com/user-attachments/assets/27e6e263-7693-4ef4-8b52-a4de268e45b5" />
 
 Ejecutamos el ataque de fuerza bruta mediante un bucle automatizado en
 bash. Este script realiza 10 intentos de conexión consecutivos por SSH
 usando un usuario inexistente para forzar la generación de eventos de
 error (Failed password) en la máquina víctima.
-<img src="media/image15.png" style="width:5.90556in;height:1.51597in" />
+
+<img width="567" height="146" alt="image" src="https://github.com/user-attachments/assets/7b1ffe30-7e0d-4b6a-a049-6e34a79a5965" />
 
 Comprobamos con curl que Elastisearch está cogiendo correctamente los
 índices del ssh con el formateo correcto, para que kibana lo detecte.
 
-<img src="media/image16.png" style="width:5.90556in;height:0.45in" />
+<img width="567" height="43" alt="image" src="https://github.com/user-attachments/assets/5d22a2c3-3da2-4969-afa4-ac6d44159b85" />
 
 Una vez hemos hecho todos los pasos, nos dirigimos a Kibana en el puerto
 5601, y vamos a stack managment/Data views, y aquí dentro hay una opción
 para crear un data view.
 
-<img src="media/image17.png" style="width:5.90556in;height:3.58819in" />
+<img width="567" height="344" alt="image" src="https://github.com/user-attachments/assets/daefb70e-e4b2-4c86-a57a-c7af14402768" />
 
-<img src="media/image18.png" style="width:3.45417in;height:3.48889in" /><img src="media/image19.png" style="width:3.22222in;height:1.11458in" />Aquí
-le ponemos un nombre representativo de lo que queremos ver, y en este
+Aquí le ponemos un nombre representativo de lo que queremos ver, y en este
 caso queremos ver los logs del ssh. Al lado de este cuadrado, vemos que
 ha detectado un index con este formato, por lo que para sacar este y los
 futuros logs ponemos esto en el index pattern.
+
+<img width="643" height="335" alt="image" src="https://github.com/user-attachments/assets/81197789-0bd9-4870-b94d-c2c2e6bdc1fb" />
 
 Una vez creado, nos dirigimos a la pestaña de Discover y vemos que nos
 salen metricas y podemos ver con exactitud los logs de una manera más
 eficiente y agradable para monitorear nuestras instalaciones.
 
-<img src="media/image20.png" style="width:5.90556in;height:2.4625in" />
+<img width="570" height="235" alt="image" src="https://github.com/user-attachments/assets/c5dcae1e-7a5e-48db-9b40-eced1792826f" />
 
 # Conclusión
 
