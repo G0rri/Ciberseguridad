@@ -1,0 +1,9 @@
+filebeat.inputs:
+- type: filestream
+  id: ssh-logs
+  enabled: true
+  paths:
+    - /var/log/auth.log
+
+output.logstash:
+  hosts: ["logstash:5044"]

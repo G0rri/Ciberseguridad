@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g" # Limita el uso de RAM a 1GB
+    ports:
+      - "9200:9200"
+    networks:
+      - red_siem
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.2
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - red_siem
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.12.2
+    container_name: logstash
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    ports:
+      - "5044:5044" # Puerto por donde Logstash recibirá los logs de Beats
+    depends_on:
+      - elasticsearch
+    networks:
+      - red_siem
+
+  victima:
+      build:
+        context: ./victima
+      container_name: victima
+      ports:
+        - "2222:22" # Mapeamos el puerto para poder atacarlo si queremos desde el host
+      depends_on:
+        - logstash
+      networks:
+        - red_siem
+
+  atacante:
+      build:
+        context: ./atacante
+      container_name: atacante
+      networks:
+        - red_siem
+
+networks:
+  red_siem:
+    driver: bridge
